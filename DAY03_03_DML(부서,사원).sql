@@ -68,8 +68,8 @@ CREATE SEQUENCE EMP_SEQ
     ORDER;
 
 -- 사원 데이터 입력
-INSERT INTO EMPLOYEE_T VALUES(EMP_SEQ.NEXTVAL, '구창민', 1, '과장', 'M', '95-05-01', 5000000);  -- 날짜는 하이픈(-) 또는 슬래시(/)로 구분
-INSERT INTO EMPLOYEE_T VALUES(EMP_SEQ.NEXTVAL, '김민서', 1, '사원', 'M', '17-09-01', 2500000);  -- 날짜는 하이픈(-) 또는 슬래시(/)로 구분
-INSERT INTO EMPLOYEE_T VALUES(EMP_SEQ.NEXTVAL, '이은영', 2, '부장', 'F', '90/09/01', 5500000);  -- 날짜는 하이픈(-) 또는 슬래시(/)로 구분
-INSERT INTO EMPLOYEE_T VALUES(EMP_SEQ.NEXTVAL, '한성일', 2, '과장', 'M', '93/04/01', 5000000);  -- 날짜는 하이픈(-) 또는 슬래시(/)로 구분
+INSERT INTO EMPLOYEE_T(EMP_NO, NAME, DEPART, POSITION, GENDER, HIRE_DATE, SALARY) VALUES(EMP_SEQ.NEXTVAL, '구창민', 1, '과장', 'M', '95-05-01', 5000000);  -- 날짜는 하이픈(-) 또는 슬래시(/)로 구분
+INSERT INTO EMPLOYEE_T(EMP_NO, NAME, DEPART, POSITION, GENDER, HIRE_DATE, SALARY) VALUES(EMP_SEQ.NEXTVAL, '김민서', 1, '사원', 'M', '17-09-01', 2500000);  -- 날짜는 하이픈(-) 또는 슬래시(/)로 구분
+INSERT INTO EMPLOYEE_T(EMP_NO, NAME, DEPART, POSITION, GENDER, HIRE_DATE, SALARY) VALUES(EMP_SEQ.NEXTVAL, '이은영', 2, '부장', 'F', '90/09/01', 5500000);  -- 날짜는 하이픈(-) 또는 슬래시(/)로 구분
+INSERT INTO EMPLOYEE_T(EMP_NO, NAME, DEPART, POSITION, GENDER, HIRE_DATE, SALARY) VALUES(EMP_SEQ.NEXTVAL, '한성일', 2, '과장', 'M', '93/04/01', 5000000);  -- 날짜는 하이픈(-) 또는 슬래시(/)로 구분
 COMMIT;
