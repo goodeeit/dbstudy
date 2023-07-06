@@ -27,3 +27,30 @@ SELECT STANDARD_HASH('1111', 'SHA1')   -- 암호화 알고리즘 SHA1
      , STANDARD_HASH('1111', 'MD5')    -- 암호화 알고리즘 MD5
   FROM DUAL;
 
+
+-- 4. 분기 처리 함수
+SELECT EMPLOYEE_ID
+     , DEPARTMENT_ID
+     , DECODE(DEPARTMENT_ID
+        , 10, 'Administration'
+        , 20, 'Marketing'
+        , 30, 'Purchasing'
+        , 40, 'Human Resources'
+        , 50, 'Shipping'
+        , 60, 'IT') AS DEPARTMENT_NAME
+  FROM EMPLOYEES;
+
+
+-- 5. 분기 처리 표현식
+SELECT EMPLOYEE_ID
+     , DEPARTMENT_ID
+     , CASE
+         WHEN DEPARTMENT_ID = 10 THEN 'Administration'
+         WHEN DEPARTMENT_ID = 20 THEN 'Marketing'
+         WHEN DEPARTMENT_ID = 30 THEN 'Purchasing'
+         WHEN DEPARTMENT_ID = 40 THEN 'Human Resources'
+         WHEN DEPARTMENT_ID = 50 THEN 'Shipping'
+         WHEN DEPARTMENT_ID = 60 THEN 'IT'
+         ELSE 'Unknown'
+       END AS DEPARTMENT_NAME
+  FROM EMPLOYEES;
