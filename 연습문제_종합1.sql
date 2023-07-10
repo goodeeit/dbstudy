@@ -194,7 +194,7 @@ SELECT U.USER_ID AS 아이디
 -- 청바지  2개
 -- 노트북  1개
 -- 모니터  2개
--- 책      1개
+-- 책      2개
 -- 벨트    0개
 SELECT P.PROD_NAME AS 제품명
      , CONCAT(COUNT(B.BUY_NO), '개') AS 판매횟수
@@ -269,15 +269,47 @@ SELECT U.USER_NAME AS 고객명
  ORDER BY U.USER_ID ASC;
 
 -- 16. 제품 테이블에서 제품명이 '책'인 제품의 카테고리를 '서적'으로 수정하시오.
-
+UPDATE PRODUCT_T
+   SET PROD_CATEGORY = '서적'
+ WHERE PROD_NAME = '책';
+COMMIT;
 
 -- 17. 연락처1이 '011'인 사용자의 연락처1을 모두 '010'으로 수정하시오.
-
+UPDATE USER_T
+   SET USER_MOBILE1 = '010'
+ WHERE USER_MOBILE1 = '011';
+COMMIT;
 
 -- 18. 구매번호가 가장 큰 구매내역을 삭제하시오.
+DELETE
+  FROM BUY_T
+ WHERE BUY_NO = (SELECT MAX(BUY_NO)
+                   FROM BUY_T);
+COMMIT;
 
+-- 아래 쿼리는 비추천.
+-- 시퀀스를 사용하였으나, INSERT 자체가 실패한 경우 가장 큰 구매번호와 CURRVAL값은 다르다.
+DELETE
+  FROM BUY_T
+ WHERE BUY_NO = (SELECT BUY_SEQ.CURRVAL
+                   FROM DUAL);
 
 -- 19. 제품코드가 1인 제품을 삭제하시오. 삭제 이후 제품번호가 1인 제품의 구매내역이 어떻게 변하는지 조회하시오.
-
+-- 삭제 전 구매내역
+SELECT * FROM BUY_T;
+-- 삭제
+DELETE FROM PRODUCT_T WHERE PROD_CODE = 1;
+COMMIT;
+-- 삭제 후 구매내역
+SELECT * FROM BUY_T;
 
 -- 20. 사용자번호가 5인 사용자를 삭제하시오. 사용자번호가 5인 사용자의 구매 내역을 먼저 삭제한 뒤 진행하시오.
+DELETE
+  FROM BUY_T
+ WHERE USER_NO = 5;
+
+DELETE
+  FROM USER_T
+ WHERE USER_NO = 5;
+
+COMMIT;
