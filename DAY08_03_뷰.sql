@@ -13,8 +13,7 @@ CREATE VIEW V_EMP AS (
 );
 
 -- 뷰 조회하기
-SELECT *
-  FROM V_EMP;
+SELECT * FROM V_EMP;
 
 
 -- 뷰를 이용한 조회 연습
