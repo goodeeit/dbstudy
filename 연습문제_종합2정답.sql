@@ -168,10 +168,23 @@ ALTER TABLE ORDER_T ADD CONSTRAINT FK_CUSTOMER_ORDER FOREIGN KEY(CUST_ID) REFERE
 ALTER TABLE ORDER_T ADD CONSTRAINT FK_BOOK_ORDER FOREIGN KEY(BOOK_ID) REFERENCES BOOK_T(BOOK_ID) ON DELETE SET NULL;
 
 -- 7. 책이름에 '올림픽'이 포함된 책 정보를 조회하시오.
-
+-- 올림픽으로 시작 : '올림픽%'
+-- 올림픽으로 끝   : '%올림픽'
+-- 올림픽을 포함   : '%올림픽%'
+SELECT *
+  FROM BOOK_T
+ WHERE BOOK_NAME LIKE '%' || '올림픽' || '%';
 
 -- 8. 가격이 가장 비싼 책을 조회하시오.
+SELECT *
+  FROM BOOK_T
+ WHERE PRICE = (SELECT MAX(PRICE)
+                  FROM BOOK_T);
 
+SELECT *
+  FROM (SELECT RANK() OVER(ORDER BY PRICE DESC) AS 순위, BOOK_ID, BOOK_NAME, PUBLISHER, PRICE
+          FROM BOOK_T)
+ WHERE 순위 = 1;
 
 -- 9. '20/07/05'부터 '20/07/09' 사이에 주문된 도서 정보를 조회하시오.
 -- 주문번호 책번호 책이름
@@ -180,12 +193,26 @@ ALTER TABLE ORDER_T ADD CONSTRAINT FK_BOOK_ORDER FOREIGN KEY(BOOK_ID) REFERENCES
 -- 230707-7 8      야구를 부탁해
 -- 230708-8 10     올림픽 챔피언
 -- 230709-9 10     올림픽 챔피언
-
+SELECT O.ORDER_ID AS 주문번호
+     , B.BOOK_ID AS 책번호
+     , B.BOOK_NAME AS 책이름
+  FROM BOOK_T B INNER JOIN ORDER_T O
+    ON B.BOOK_ID = O.BOOK_ID
+ WHERE O.ORDER_DT BETWEEN TO_DATE('20/07/05') AND TO_DATE('20/07/09')
+ ORDER BY O.ORDER_DT ASC;
 
 -- 10. 주문한 이력이 없는 고객의 이름을 조회하시오.
 -- 고객명
 -- 박세리
+SELECT CUST_NAME AS 고객명
+  FROM CUSTOMER_T
+ WHERE CUST_ID NOT IN(SELECT CUST_ID
+                        FROM ORDER_T);
 
+SELECT C.CUST_NAME AS 고객명
+  FROM CUSTOMER_T C LEFT OUTER JOIN ORDER_T O
+    ON C.CUST_ID = O.CUST_ID
+ WHERE O.ORDER_ID IS NULL;
 
 -- 11. '20/07/04'부터 '20/07/07' 사이에 주문 받은 도서를 제외하고 나머지 모든 주문 정보를 조회하시오.
 -- 구매번호  구매자  책이름           총구매액 주문일자
@@ -195,29 +222,74 @@ ALTER TABLE ORDER_T ADD CONSTRAINT FK_BOOK_ORDER FOREIGN KEY(BOOK_ID) REFERENCES
 -- 230710-10 장미란  역도 단계별 기술 24000    20/07/10
 -- 230709-9  김연아  올림픽 챔피언    13000    20/07/09
 -- 230708-8  장미란  올림픽 챔피언    26000    20/07/08
-
+SELECT O.ORDER_ID  AS 구매번호
+     , C.CUST_NAME AS 구매자
+     , B.BOOK_NAME AS 책이름
+     , B.PRICE * O.AMOUNT AS 총구매액
+     , O.ORDER_DT AS 주문일자
+  FROM BOOK_T B INNER JOIN ORDER_T O
+    ON B.BOOK_ID = O.BOOK_ID INNER JOIN CUSTOMER_T C
+    ON C.CUST_ID = O.CUST_ID
+ WHERE O.ORDER_DT NOT BETWEEN TO_DATE('20/07/04') AND TO_DATE('20/07/07');
 
 -- 12. 가장 최근에 구매한 고객의 이름, 책이름, 주문일자를 조회하시오.
 -- 고객명  책이름            주문일자
 -- 장미란  역도 단계별 기술  20/07/10
-
+SELECT C.CUST_NAME AS 고객명
+     , B.BOOK_NAME AS 책이름
+     , O.ORDER_DT AS 주문일자
+  FROM BOOK_T B INNER JOIN ORDER_T O
+    ON B.BOOK_ID = O.BOOK_ID INNER JOIN CUSTOMER_T C
+    ON C.CUST_ID = O.CUST_ID
+ WHERE O.ORDER_DT = (SELECT MAX(ORDER_DT)
+                       FROM ORDER_T);
 
 -- 13. 주문된 적이 없는 책의 주문번호, 책번호, 책이름을 조회하시오.
 -- 주문번호 책번호 책이름
 -- NULL     4      골프 바이블
 -- NULL     9      올림픽 이야기
-
+SELECT O.ORDER_ID AS 주문번호
+     , B.BOOK_ID AS 책번호
+     , B.BOOK_NAME AS 책이름
+  FROM BOOK_T B LEFT OUTER JOIN ORDER_T O
+    ON B.BOOK_ID = O.BOOK_ID
+ WHERE O.ORDER_ID IS NULL;
 
 -- 14. 모든 서적 중에서 가장 비싼 서적을 구매한 고객이름, 책이름, 가격을 조회하시오.
 -- 가장 비싼 서적을 구매한 고객이 없다면 고객 이름은 NULL로 처리하시오.
 -- 고객명  책이름       책가격
 -- NULL    골프 바이블  35000
-
+SELECT C.CUST_NAME AS 고객명
+     , B.BOOK_NAME AS 책이름
+     , B.PRICE AS 책가격
+  FROM BOOK_T B LEFT OUTER JOIN ORDER_T O
+    ON B.BOOK_ID = O.BOOK_ID LEFT OUTER JOIN CUSTOMER_T C
+    ON C.CUST_ID = O.CUST_ID
+ WHERE B.PRICE = (SELECT MAX(PRICE)
+                    FROM BOOK_T);
 
 -- 15. '김연아'가 구매한 도서수를 조회하시오.
 -- 고객명  구매도서수
 -- 김연아  2
+SELECT C.CUST_NAME AS 고객명
+     , COUNT(O.ORDER_ID) AS 구매도서수  -- 주문을 몇 번 했는가?
+  FROM CUSTOMER_T C INNER JOIN ORDER_T O
+    ON C.CUST_ID = O.CUST_ID
+ WHERE C.CUST_NAME = '김연아'
+ GROUP BY C.CUST_ID, C.CUST_NAME;
 
+-- '김연아'가 구매한 책이 몇 종인가? (피겨의 정석을 2번 주문했다면 구매한 책은 1종)
+-- 고객명   책번호
+-- 김연아   1
+-- 김연아   1
+-- 김연아   2
+-- 김연아   2
+SELECT C.CUST_NAME AS 고객명
+     , COUNT(DISTINCT O.BOOK_ID) AS 구매도서수
+  FROM CUSTOMER_T C INNER JOIN ORDER_T O
+    ON C.CUST_ID = O.CUST_ID
+ WHERE C.CUST_NAME = '김연아'
+ GROUP BY C.CUST_ID, C.CUST_NAME;
 
 -- 16. 출판사별로 판매된 책의 갯수를 조회하시오.
 -- 출판사     판매된책수
@@ -226,12 +298,22 @@ ALTER TABLE ORDER_T ADD CONSTRAINT FK_BOOK_ORDER FOREIGN KEY(BOOK_ID) REFERENCES
 -- 나이스북   3
 -- 대한미디어 1
 -- 이상미디어 2
-
+SELECT B.PUBLISHER AS 출판사
+     , COUNT(O.ORDER_ID) AS 판매된책수
+  FROM BOOK_T B LEFT OUTER JOIN ORDER_T O
+    ON B.BOOK_ID = O.BOOK_ID
+ GROUP BY B.PUBLISHER;
 
 -- 17. '박지성'이 구매한 도서를 발간한 출판사(PUBLISHER) 개수를 조회하시오.
 -- 고객명  출판사수
 -- 박지성  3
-
+SELECT C.CUST_NAME AS 고객명
+     , COUNT(DISTINCT B.PUBLISHER) AS 출판사
+  FROM CUSTOMER_T C INNER JOIN ORDER_T O
+    ON C.CUST_ID = O.CUST_ID INNER JOIN BOOK_T B
+    ON B.BOOK_ID = O.BOOK_ID
+ WHERE C.CUST_NAME = '박지성'
+ GROUP BY C.CUST_ID, C.CUST_NAME;
 
 -- 18. 모든 구매 고객의 이름과 총구매액(PRICE * AMOUNT)을 조회하시오. 구매 이력이 있는 고객만 조회하시오.
 -- 고객명  총구매액
@@ -239,7 +321,12 @@ ALTER TABLE ORDER_T ADD CONSTRAINT FK_BOOK_ORDER FOREIGN KEY(BOOK_ID) REFERENCES
 -- 김연아  19000
 -- 장미란  62000
 -- 추신수  86000
-
+SELECT C.CUST_NAME AS 고객명
+     , SUM(B.PRICE * O.AMOUNT) AS 구매액
+  FROM CUSTOMER_T C INNER JOIN ORDER_T O
+    ON C.CUST_ID = O.CUST_ID INNER JOIN BOOK_T B
+    ON B.BOOK_ID = O.BOOK_ID
+ GROUP BY C.CUST_ID, C.CUST_NAME;
 
 -- 19. 모든 구매 고객의 이름과 총구매액(PRICE * AMOUNT)과 구매횟수를 조회하시오. 구매 이력이 없는 고객은 총구매액과 구매횟수를 0으로 조회하고, 고객번호 오름차순으로 정렬하시오.
 -- 고객명  총구매액  구매횟수
@@ -248,9 +335,26 @@ ALTER TABLE ORDER_T ADD CONSTRAINT FK_BOOK_ORDER FOREIGN KEY(BOOK_ID) REFERENCES
 -- 장미란  62000      3
 -- 추신수  86000      2
 -- 박세리  0          0
-
+SELECT C.CUST_NAME AS 고객명
+     , NVL(SUM(B.PRICE * O.AMOUNT), 0) AS 총구매액
+     , COUNT(O.ORDER_ID) AS 구매횟수
+  FROM CUSTOMER_T C LEFT OUTER JOIN ORDER_T O
+    ON C.CUST_ID = O.CUST_ID LEFT OUTER JOIN BOOK_T B
+    ON B.BOOK_ID = O.BOOK_ID
+ GROUP BY C.CUST_ID, C.CUST_NAME
+ ORDER BY C.CUST_ID ASC;
 
 -- 20. 총구매액이 2~3위인 고객의 이름와 총구매액을 조회하시오.
 -- 고객명  총구매액
 -- 추신수  86000
 -- 장미란  62000
+SELECT A.CUST_NAME AS 고객명
+     , A.TOTAL AS 총구매액
+  FROM (SELECT RANK() OVER(ORDER BY SUM(B.PRICE * O.AMOUNT) DESC) AS RK
+             , C.CUST_NAME
+             , SUM(B.PRICE * O.AMOUNT) AS TOTAL
+          FROM CUSTOMER_T C INNER JOIN ORDER_T O
+            ON C.CUST_ID = O.CUST_ID INNER JOIN BOOK_T B
+            ON B.BOOK_ID = O.BOOK_ID
+         GROUP BY C.CUST_ID, C.CUST_NAME) A
+ WHERE A.RK BETWEEN 2 AND 3;
