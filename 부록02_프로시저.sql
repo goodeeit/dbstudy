@@ -133,10 +133,65 @@ CREATE TABLE BUY_T (
 CREATE SEQUENCE BUY_SEQ ORDER;
 
 
--- 프로시저 실습하기
+/*
+    프로시저 실습하기
+    
+    1. BUY_PROC 프로시저를 작성한다.
+    2. 처리할 일
+        1) 제품 테이블의 재고를 수정한다.
+        2) 고객 테이블의 포인트를 수정한다.
+        3) 주문 테이블에 주문내역을 삽입한다.
+    3. 프로시저 호출 예시
+        BUY_PROC(1, 1000, 10);  고객번호 1이 제품코드 1000을 10개 구매하였다.
+*/
+
+CREATE OR REPLACE PROCEDURE BUY_PROC(
+  /* 고객번호 */   CNO IN CUST_T.C_NO%TYPE
+  /* 제품코드 */ , PCODE IN PROD_T.P_CODE%TYPE
+  /* 구매수량 */ , AMOUNT IN BUY_T.B_AMOUNT%TYPE
+)
+AS
+BEGIN
+    
+    -- 1) 제품 테이블의 재고를 수정한다.
+    UPDATE PROD_T
+       SET P_STOCK = P_STOCK - AMOUNT
+     WHERE P_CODE = PCODE;
+    
+    -- 2) 고객 테이블의 포인트를 수정한다. (구매액(가격 * 구매수량)의 10%, 소수 이하 올림 처리)
+    UPDATE CUST_T
+       SET C_POINT = C_POINT + CEIL((SELECT P_PRICE FROM PROD_T WHERE P_CODE = PCODE) * AMOUNT * 0.1)
+     WHERE C_NO = CNO;
+    
+    -- 3) 주문 테이블에 주문내역을 삽입한다.
+    INSERT INTO BUY_T(
+        B_NO
+      , C_NO
+      , P_CODE
+      , B_AMOUNT
+    ) VALUES (
+        BUY_SEQ.NEXTVAL
+      , CNO
+      , PCODE
+      , AMOUNT
+    );
+
+    -- 4) 커밋
+    COMMIT;
+
+EXCEPTION
+
+    WHEN OTHERS THEN  -- 모든 예외 처리
+        
+        -- 예외 사유 출력
+        DBMS_OUTPUT.PUT_LINE(SQLERRM || '(' || SQLCODE || ')');
+        
+        -- 작업 수행 취소
+        ROLLBACK;
+        
+END;
 
 
-
-
-
-
+BEGIN
+    BUY_PROC(1, 1000, 10);
+END;
