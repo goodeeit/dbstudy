@@ -1,15 +1,19 @@
 /*
     기초데이터 준비
-    HR 계정의 EMPLOYEES 테이블을 GD 계정으로 복사해서 사용
+    1. HR 계정의 EMPLOYEES 테이블을 GD 계정으로 복사해서 사용한다.
+    2. 테이블을 복사해도 기본키/외래키 제약 조건은 복사가 되지 않는다. 필요하면 제약조건을 추가해야 한다.
 */
 
+-- 테이블 복사
 DROP TABLE EMPLOYEES;
 CREATE TABLE EMPLOYEES AS (
     SELECT *
       FROM HR.EMPLOYEES
 );
--- 기본키/외래키 제약 조건은 복사가 되지 않는다.
+-- 기본키 제약 조건 추가
 ALTER TABLE EMPLOYEES ADD CONSTRAINT PK_EMP PRIMARY KEY(EMPLOYEE_ID);
+
+
 
 /*
     PL/SQL
@@ -37,7 +41,7 @@ ALTER TABLE EMPLOYEES ADD CONSTRAINT PK_EMP PRIMARY KEY(EMPLOYEE_ID);
     1. 기본적으로 서버 메시지는 출력되지 않는다.
     2. 서버 메시지 출력을 위해서 최초 1회 아래 쿼리문을 실행한다.
         SET SERVEROUTPUT ON;
-    3. 출력하는 방법
+    3. 서버 메시지 출력하는 방법
         DBMS_OUTPUT.PUT_LINE(출력할내용);
 */
 
@@ -50,7 +54,8 @@ BEGIN
 END;
 
 
--- 1. 스칼라 변수(직접 타입을 명시하는 방법)
+
+-- 스칼라 변수(직접 타입을 명시하는 방법)
 DECLARE
     NAME VARCHAR2(20 BYTE);
     AGE NUMBER(3);
@@ -62,7 +67,8 @@ BEGIN
 END;
 
 
--- 2. 참조 변수(특정 칼럼의 타입을 명시)
+
+-- 참조 변수(특정 칼럼의 타입을 명시)
 DECLARE
     EMPLOYEEID EMPLOYEES.EMPLOYEE_ID%TYPE;
     FIRSTNAME  EMPLOYEES.FIRST_NAME%TYPE;
@@ -74,6 +80,7 @@ BEGIN
      WHERE EMPLOYEE_ID = 100;
     DBMS_OUTPUT.PUT_LINE(EMPLOYEEID || ', ' || FIRSTNAME || ', ' || LASTNAME);
 END;
+
 
 
 /*
@@ -109,7 +116,6 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE(SCORE || '점은 ' || GRADE || '학점입니다.');
 END;
 
-
 -- 2. 참조 변수를 이용한 IF문 처리
 DECLARE
     EMPLOYEEID EMPLOYEES.EMPLOYEE_ID%TYPE;
@@ -126,6 +132,7 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('보통연봉');
     END IF;
 END;
+
 
 
 /*
@@ -173,6 +180,7 @@ BEGIN
 END;
 
 
+
 /*
     WHILE 구문
     
@@ -210,6 +218,7 @@ BEGIN
 END;
 
 
+
 /*
     FOR 구문
     
@@ -217,6 +226,7 @@ END;
         실행문
     END LOOP;
 */
+
 -- 1 ~ 5 출력하기
 DECLARE
     N NUMBER(1);
@@ -225,6 +235,7 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE(N);
     END LOOP;
 END;
+
 
 
 /*
@@ -250,7 +261,6 @@ BEGIN
     -- 결과 확인
     DBMS_OUTPUT.PUT_LINE(N || ', ' || TOTAL);
 END;
-
 
 -- 1부터 누적하기. 3의 배수는 제외하고 누적하기. 누적 결과가 100이 넘어가면 그만 누적하고 결과 출력하기.
 DECLARE
@@ -282,6 +292,7 @@ BEGIN
     -- 결과 확인
     DBMS_OUTPUT.PUT_LINE(N || ', ' || TOTAL);
 END;
+
 
 
 /*
